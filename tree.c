@@ -59,21 +59,21 @@ int tree(const char *argDir)
                 sprintf(path2, "%s\\%s", path, pDir->d_name);
 #elif __linux__
 
-                if (pDir->d_type == DT_DIR)
-                {
-                    sprintf(path2, "%s/%s", path, pDir->d_name);
+            if (pDir->d_type == DT_DIR)
+            {
+                sprintf(path2, "%s/%s", path, pDir->d_name);
 #endif
 
-                    printf("%s\n", path2);
+                printf("%s\n", path2);
 
-                    tree(path2);
-                }
-                else
-                {
-                    printf("%s\n", pDir->d_name);
-                }
+                tree(path2);
+            }
+            else
+            {
+                printf("%s\n", pDir->d_name);
             }
         }
+    }
     depth--;
     return 0;
 }
