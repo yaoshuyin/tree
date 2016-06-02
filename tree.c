@@ -44,38 +44,38 @@ int tree(const char *argDir)
 #ifdef _WIN32
         while ((pDir = _readdir(dir)) != NULL)
 #elif __linux__
-            while ((pDir = readdir(dir)) != NULL)
+        while ((pDir = readdir(dir)) != NULL)
 #endif
+        {
+            if (ignore(pDir->d_name) == 0)
             {
-                if (ignore(pDir->d_name) == 0)
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                repeat(depth, "\t");
+            repeat(depth, "\t");
 #ifdef _WIN32
-                if (pDir->d_type == 2)
-                {
-                    sprintf(path2, "%s\\%s", path, pDir->d_name);
+            if (pDir->d_type == 2)
+            {
+                sprintf(path2, "%s\\%s", path, pDir->d_name);
 #elif __linux__
 
-                    if (pDir->d_type == DT_DIR)
-                    {
-                        sprintf(path2, "%s/%s", path, pDir->d_name);
+                if (pDir->d_type == DT_DIR)
+                {
+                    sprintf(path2, "%s/%s", path, pDir->d_name);
 #endif
 
-                        printf("%s\n", path2);
+                    printf("%s\n", path2);
 
-                        tree(path2);
-                    }
-                    else
-                    {
-                        printf("%s\n", pDir->d_name);
-                    }
+                    tree(path2);
+                }
+                else
+                {
+                    printf("%s\n", pDir->d_name);
                 }
             }
-        depth--;
-        return 0;
+        }
+    depth--;
+    return 0;
 }
 
 int main(int argc, char **argv)
