@@ -28,7 +28,6 @@ int tree(const char *argDir)
     char path[256];
     char path2[256];
 
-
 #ifdef _WIN32
     struct _dirent *pDir = NULL;
     _DIR *dir = _opendir(argDir);
