@@ -124,12 +124,16 @@ int tree(const char *dir)
 
 int main(int argc, char **argv)
 {
-    setlocale(LC_ALL, "zh_CN.UTF-8");
-    pid_t pid=getpid();
-    sprintf(file_list,"/tmp/mysync.%d",pid);
+    setlocale(LC_ALL, "en_US.UTF-8");
 
-    strcpy(root_path,"/data/Progs");
-    tree("/data/Progs");
+    if(argc == 2)
+    {
+        pid_t pid=getpid();
+        sprintf(file_list,"/tmp/mysync.%d",pid);
+
+        strcpy(root_path,argv[1]);
+        tree(root_path);
+    }
     return 0;
 }
 
