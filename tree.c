@@ -25,6 +25,16 @@ char file_list[50];
 int pid =1;
 char **flist;
 
+/**
+ * return:
+ *     >0 the number of wide characters written
+ *     -1 when an error
+ */
+int c2w(wchar_t *w, char *c)
+{
+    return swprintf(w,sizeof(w),L"%s",c);
+}
+
 int ignore(const char *name)
 {
     if ( strstr(name, ".Trash")!=NULL || strcmp(".git", name) == 0 || strcmp(".", name) == 0 || strcmp("..", name) == 0 || strcmp("$Recycle.Bin", name) == 0 || strcmp("System Volume Information", name) == 0)
