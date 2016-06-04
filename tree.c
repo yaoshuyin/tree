@@ -1,88 +1,135 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <strings.h>
+#include <sys/types.h>
+#include <locale.h>
+
+//for scandir
 #include <dirent.h>
 
+//for stat()
+#include <sys/stat.h>
+
+//for getpid()
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <wchar.h>
+
+int show_tree=1;
 int depth = 0;
+char root_path[256];
+char file_list[50];
+
+int pid =1;
+char **flist;
 
 int ignore(const char *name)
 {
-    if (strcmp(".", name) == 0 || strcmp("..", name) == 0 || strcmp("$Recycle.Bin", name) == 0 || strcmp("System Volume Information", name) == 0)
+    if ( strstr(name, ".Trash")!=NULL || strcmp(".git", name) == 0 || strcmp(".", name) == 0 || strcmp("..", name) == 0 || strcmp("$Recycle.Bin", name) == 0 || strcmp("System Volume Information", name) == 0)
     {
         return 0;
     }
     return 1;
 }
 
-void repeat(int count, const char *s)
+void repeat(int count, const char *s,char *buf)
 {
-    for(int i=0; i<count; i++)
+    for (int i = 0; i < count; i++)
     {
-        printf("%s",s);
+        sprintf(buf,"%s%s", buf,s);
     }
 }
 
-int tree(const char *argDir)
+
+int one (const struct dirent *unused)
+{
+    return 1;
+}
+
+
+#ifdef _WIN32
+struct _stat st;
+#elif __linux__
+struct stat st;
+#endif
+
+int tree(const char *dir)
 {
     depth++;
+    FILE *fp = fopen(file_list, "a,css=UTF-8");
 
-    char path[256];
-    char path2[256];
+    char whole_path[256];
 
-#ifdef _WIN32
-    struct _dirent *pDir = NULL;
-    _DIR *dir = _opendir(argDir);
-#elif __linux__
-    struct dirent *pDir = NULL;
-    DIR *dir = opendir(argDir);
-#endif
-
-    if (dir != NULL)
+    struct dirent **eps;
+    int n;
+    n = scandir (dir, &eps, one, alphasort);
+    if (n >= 0)
     {
-        sprintf(path, ("%s", argDir));
+        char buf[256];
 
-#ifdef _WIN32
-        while ((pDir = _readdir(dir)) != NULL)
-#elif __linux__
-        while ((pDir = readdir(dir)) != NULL)
-#endif
+        if(show_tree)
         {
-            if (ignore(pDir->d_name) == 0)
+            repeat(depth, "   ",buf);
+        }
+        int cnt;
+        for (cnt = 0; cnt < n; ++cnt)
+        {
+
+            if (ignore(eps[cnt]->d_name) == 0)
             {
                 continue;
             }
 
-            repeat(depth, "\t");
-#ifdef _WIN32
-            if (pDir->d_type == 2)
-            {
-                sprintf(path2, "%s\\%s", path, pDir->d_name);
-#elif __linux__
+            memset(whole_path, '\0', sizeof(whole_path));
 
-            if (pDir->d_type == DT_DIR)
+#ifdef _WIN32
+            sprintf(whole_path, "%s\\%s", dir, p_dirent->d_name);
+            if (eps[cnt]->d_type == 2)
+#elif __linux__
+                sprintf(whole_path, "%s/%s", dir, eps[cnt]->d_name);
+            if (eps[cnt]->d_type == DT_DIR)
+#endif
             {
-                sprintf(path2, "%s/%s", path, pDir->d_name);
+#ifdef _WIN32
+                _stat(p_dirent->d_name, &st);
+#elif __linux__
+                stat(eps[cnt]->d_name, &st);
 #endif
 
-                printf("%s\n", path2);
+                int pos=strlen(root_path)+1;
+                fwprintf(fp,L"%s%s\n",buf,whole_path+pos);
 
-                tree(path2);
+                tree(whole_path);
             }
             else
             {
-                printf("%s\n", pDir->d_name);
+
+#ifdef _WIN32
+                _stat(p_dirent->d_name, &st);
+#elif __linux__
+                stat(whole_path, &st);
+#endif
+                int pos=strlen(root_path)+1;
+                fwprintf(fp,L"%s%s|%ld|%ld\n", buf,whole_path+pos,st.st_size,st.st_mtim.tv_sec);
+
             }
         }
     }
+    fclose(fp);
     depth--;
     return 0;
 }
 
 int main(int argc, char **argv)
 {
-    if(argc == 2)
-    {
-        printf("%s\n", argv[1]);
-        tree(argv[1]);
-    }
+    setlocale(LC_ALL, "zh_CN.UTF-8");
+    pid_t pid=getpid();
+    sprintf(file_list,"/tmp/mysync.%d",pid);
+
+    strcpy(root_path,"/data/Progs");
+    tree("/data/Progs");
     return 0;
 }
+
