@@ -1,29 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include <sys/types.h>
-#include <locale.h>
-
-//for scandir
-#include <dirent.h>
-
-//for stat()
-#include <sys/stat.h>
-
-//for getpid()
-#include <sys/types.h>
-#include <unistd.h>
-
-#include <wchar.h>
+#include "tree.h"
 
 int show_tree=1;
 int depth = 0;
 char root_path[256];
 char file_list[50];
-
 int pid =1;
-char **flist;
+#ifdef _WIN32
+struct _stat st;
+#elif __linux__
+struct stat st;
+#endif
+
 
 /**
  * return:
@@ -53,22 +40,15 @@ void repeat(int count, const char *s,char *buf)
 }
 
 
-int one (const struct dirent *unused)
+int one (const struct dirent *dir)
 {
     return 1;
 }
 
-
-#ifdef _WIN32
-struct _stat st;
-#elif __linux__
-struct stat st;
-#endif
-
-int tree(const char *dir)
+int tree(const char *dir,const char *dst_file)
 {
     depth++;
-    FILE *fp = fopen(file_list, "a,css=UTF-8");
+    FILE *fp = fopen(dst_file, "a,css=UTF-8");
 
     char whole_path[256];
 
@@ -111,7 +91,7 @@ int tree(const char *dir)
                 int pos=strlen(root_path)+1;
                 fwprintf(fp,L"%s%s\n",buf,whole_path+pos);
 
-                tree(whole_path);
+                tree(whole_path,dst_file);
             }
             else
             {
@@ -132,13 +112,14 @@ int tree(const char *dir)
     return 0;
 }
 
+/*
 int main(int argc, char **argv)
 {
     setlocale(LC_ALL, "en_US.UTF-8");
 
     if(argc == 2)
     {
-        pid_t pid=getpid();
+        pid=getpid();
         sprintf(file_list,"/tmp/mysync.%d",pid);
 
         strcpy(root_path,argv[1]);
@@ -146,4 +127,4 @@ int main(int argc, char **argv)
     }
     return 0;
 }
-
+*/
