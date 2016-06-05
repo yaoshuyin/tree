@@ -3,6 +3,9 @@
 #include <string.h>
 #include <unistd.h>
 #include "set.h"
+#include "md5sum.h"
+
+// gcc -Wall diff.c set2.c md5sum.c -o diff -lcrypto -lssl
 
 int main()
 {
@@ -15,7 +18,6 @@ int main()
     int lines_file1=0;
     int lines_file2=0;
 
-    size_t max_line_len=0;
 
     //get lines and max_line_len of file1
     while(fgets(buf_file1,sizeof(buf_file1),fp1)!=NULL){
